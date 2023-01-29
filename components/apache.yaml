@@ -1,0 +1,48 @@
+name: Apache Component
+description: Installs Apache2 Web Server
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Update_APT
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              echo "Updating APT"
+              sudo apt update
+      - name: Install_Apache2
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              echo "Installing Apache2"
+              sudo apt install -y apache2
+              sudo systemctl enable apache2
+  - name: validate
+    steps:
+      - name: Validate_Apache2
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              PKG_NAME=apache2
+              INSTALL_OK=$(dpkg-query -W --showformat='${Status}\n' $PKG_NAME|grep "install ok installed")
+              if [ "" = "$INSTALL_OK" ]; then
+                echo "$PKG_NAME not installed correctly. Failing"
+                exit 1
+              else
+                echo "$PKG_NAME installed correctly"
+              fi
+  - name: test
+    steps:
+      - name: Is_Apache_Enabled_Active
+        action: ExecuteBash
+        loop:
+          name: BatchExecLoop
+          forEach:
+            - is-enabled
+            - is-active
+        inputs:
+          commands:
+            - sudo systemctl "{{ loop.value }}" apache2

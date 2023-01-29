@@ -1,0 +1,40 @@
+name: NodeJS Component
+description: Installs NodeJS
+schemaVersion: 1.0
+parameters:
+  - NodeJSVersion:
+      type: string
+      default: '18.x'
+      description: NodeJS Version
+phases:
+  - name: build
+    steps:
+      - name: Update_APT
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              echo "Updating APT"
+              sudo apt update
+      - name: Install_NodeJS
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              echo "Installing Node.js"
+              curl -sL https://deb.nodesource.com/setup_{{ NodeJSVersion }} -o /tmp/nodesource_setup.sh
+              sudo bash /tmp/nodesource_setup.sh
+              sudo apt install -y nodejs
+  - name: validate
+    steps:
+      - name: Validate_NodeJs
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if [ `node -v` ]; then
+                echo 'Node.js successfully installed.'
+              else
+                echo 'Node.js was not installed correctly. Failing.'
+                exit 1
+              fi
